@@ -13,14 +13,15 @@ from data_manager import DataManager
 IATA_ENDPOINT: str = 'https://test.api.amadeus.com/v1/reference-data/locations/cities'
 FLIGHT_ENDPOINT: str = 'https://test.api.amadeus.com/v2/shopping/flight-offers'
 # TOKEN_ENDPOINT: str = 'https://test.api.amadeus.com/v1/security/oauth2/token/'
-AUTH_ENDPOINT = "https://test.api.amadeus.com/v1/security/oauth2/token"
+AUTH_ENDPOINT: str = "https://test.api.amadeus.com/v1/security/oauth2/token"
+
+load_dotenv()
 
 
 class FlightSearch:
     '''
     Search for flights.
     '''
-    load_dotenv()
 
     def __init__(self) -> None:
         '''
@@ -94,7 +95,7 @@ class FlightSearch:
 
         return code
 
-    def check_flights(self, origin_city_code, destination_city_code, from_time, to_time):
+    def check_flights(self, origin_city_code, destination_city_code, from_time, to_time, is_direct=True):
         headers = {
             'Authorization': f'Bearer {self._token}'
         }
@@ -104,7 +105,7 @@ class FlightSearch:
             'departureDate': from_time.strftime('%Y-%m-%d'),
             'returnDate': to_time.strftime('%Y-%m-%d'),
             'adults': 1,
-            'nonStop': 'true',
+            'nonStop': 'true' if is_direct else 'false',
             'currencyCode': 'GBP',
             'max': '10'
         }

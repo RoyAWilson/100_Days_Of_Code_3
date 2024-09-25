@@ -22,12 +22,12 @@ ORIGIN_CITY_DATA = 'LON'
 
 # Update airport codes in the google sheet:
 
-# for row in sheet_data:
-#     if row['iataCode'] == '':
-#         row['iataCode'] = flight_search.get_destination_code(row['city'])
-#         time.sleep(2)
-# data_manager.destination_data = sheet_data
-# data_manager.update_destination_codes()
+for row in sheet_data:
+    if row['iataCode'] == '':
+        row['iataCode'] = flight_search.get_destination_code(row['city'])
+        time.sleep(2)
+data_manager.destination_data = sheet_data
+data_manager.update_destination_codes()
 
 # Initiate flight search
 
@@ -49,14 +49,29 @@ for destination in sheet_data:
     flight_string = flights_string + f'Destination City {destination['city']}: Cheapest flight {
         cheapest_flight.price}\n'
 
+# If no direct flights, search for indirect flights:
+
+    if cheapest_flight.price == 'N/A':
+        print(f'No direct flights to {
+            destination['city']}.  Looking for indirect flights...')
+        stop_over_flights = flight_search.check_flights(
+            ORIGIN_CITY_DATA,
+            destination['iataCode'],
+            from_time=tomorrow,
+            to_time=six_months_from_today,
+            is_direct=False
+        )
+        cheapest_flight = FlightData.get_cheapest_flights(stop_over_flights)
+        print(f'Cheapest flight price is {cheapest_flight.price}')
+
 # Email results to self:
 
-G_MAIL = os.getenv('G_MAIL')
-G_PASS = os.getenv('G_PASS')
-H_MAIL = os.getenv('AMA_USER')
-print(flight_string)
-with smtplib.SMTP(host='smtp.gmail.com') as connection:
-    connection.starttls()
-    connection.login(user=G_MAIL, password='G_PASS')
-    connection.sendmail(from_addr='G_MAIL', to_addrs=H_MAIL,
-                        msg=f'subhect:Cheap Flights\n\n{flight_string}')
+# G_MAIL = os.getenv('G_MAIL')
+# G_PASS = os.getenv('G_PASS')
+# H_MAIL = os.getenv('AMA_USER')
+# print(flight_string)
+# with smtplib.SMTP(host='smtp.gmail.com') as connection:
+#     connection.starttls()
+#     connection.login(user=G_MAIL, password='G_PASS')
+#     connection.sendmail(from_addr='G_MAIL', to_addrs=H_MAIL,
+#                         msg=f'subhect:Cheap Flights\n\n{flight_string}')
